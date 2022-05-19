@@ -1,0 +1,9 @@
+[package]
+name = "ytdlpwui"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
+config = "0.13.1"

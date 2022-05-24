@@ -1717,5 +1717,7 @@ name = "ytdlpwui"
 version = "0.1.0"
 dependencies = [
  "config",
+ "lazy_static",
  "rocket",
+ "serde",
 ]

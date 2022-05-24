@@ -1,33 +1,15 @@
 #[macro_use]
 extern crate rocket;
-use config::{Config, ConfigError};
-use std::collections::HashMap;
 
-#[derive(Debug)]
-enum ConfError {
-    Config(ConfigError),
-    ParsingFail,
-}
+#[macro_use]
+extern crate lazy_static;
 
-impl From<ConfigError> for ConfError {
-    fn from(err: ConfigError) -> ConfError {
-        ConfError::Config(err)
-    }
-}
+mod settings;
+mod ytdlp;
 
-fn parse_config() -> Result<HashMap<String, String>, ConfError> {
-    let builder = Config::builder()
-        .set_default("ytdlp", "/usr/bin/yt-dlp")?
-        .add_source(config::File::new("ytdlpwui.conf", config::FileFormat::Toml))
-        .add_source(config::Environment::with_prefix("YTDLPWUI"));
-
-    if let Ok(settings) = builder.build() {
-        let result = settings.try_deserialize::<HashMap<String, String>>();
-        if let Ok(hashmap) = result {
-            return Ok(hashmap);
-        }
-    }
-    Err(ConfError::ParsingFail)
+lazy_static! {
+    static ref CONFIG: settings::Settings =
+        settings::Settings::new().expect("config can be loaded");
 }
 
 #[get("/")]
@@ -37,9 +19,10 @@ fn index() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    if let Ok(result) = parse_config() {
-        println!("Parsed, {:?}", result)
-    };
-
+    println!("Parsed, {:?}", CONFIG.ytdlp);
+    let result = ytdlp::app_call(ytdlp::Command::Search {
+        id: "name".to_string(),
+    });
+    println!("{:?}", result);
     rocket::build().mount("/", routes![index])
 }

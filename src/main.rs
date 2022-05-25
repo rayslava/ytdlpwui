@@ -19,8 +19,9 @@ fn index() -> &'static str {
 
 #[get("/id/<videoid>")]
 async fn get_by_id(videoid: String) {
-    let result = ytdlp::req_by_link(videoid);
-    println!("{:?}", result);
+    if let Ok(result) = ytdlp::req_by_link(videoid) {
+        println!("{:?}", result);
+    }
 }
 
 #[get("/search/<searchstring>")]

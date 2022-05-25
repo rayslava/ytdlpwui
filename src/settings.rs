@@ -52,6 +52,10 @@ impl From<&str> for ENV {
 
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
+        for (key, value) in std::env::vars() {
+            println!("{key}: {value}");
+        }
+
         let env = std::env::var("RUN_ENV").unwrap_or_else(|_| "Development".into());
         let builder = Config::builder()
             .set_default("env", env.clone())?

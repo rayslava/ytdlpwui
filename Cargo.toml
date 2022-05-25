@@ -8,4 +8,8 @@ publish = false
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 config = "0.13.1"
 serde = {version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 lazy_static = "1.4"
+
+[dev-dependencies]
+mry = "0.2.2"

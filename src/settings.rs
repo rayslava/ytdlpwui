@@ -20,7 +20,7 @@ pub struct Settings {
     pub env: ENV,
 }
 
-const CONFIG_FILE_PATH: &str = "./resource/ytdlpwui.conf";
+const CONFIG_FILE_PATH: &str = "./resources/ytdlpwui.conf";
 const CONFIG_FILE_PREFIX: &str = "./config/";
 
 #[derive(Clone, Debug, Deserialize)]

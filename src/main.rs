@@ -17,12 +17,20 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
+#[get("/id/<videoid>")]
+async fn get_by_id(videoid: String) {
+    let result = ytdlp::req_by_link(videoid);
+    println!("{:?}", result);
+}
+
+#[get("/search/<searchstring>")]
+async fn run_search(searchstring: String) {
+    let result = ytdlp::search(searchstring);
+    println!("{:?}", result);
+}
+
 #[launch]
 fn rocket() -> _ {
     println!("Parsed, {:?}", CONFIG.ytdlp);
-    let result = ytdlp::app_call(ytdlp::Command::Search {
-        id: "name".to_string(),
-    });
-    println!("{:?}", result);
-    rocket::build().mount("/", routes![index])
+    rocket::build().mount("/", routes![index, get_by_id, run_search])
 }

@@ -6,6 +6,7 @@ extern crate lazy_static;
 
 mod settings;
 mod ytdlp;
+use rocket::serde::json::Json;
 
 lazy_static! {
     static ref CONFIG: settings::Settings =
@@ -17,17 +18,28 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-#[get("/id/<videoid>")]
-async fn get_by_id(videoid: String) {
-    if let Ok(result) = ytdlp::req_by_link(videoid) {
-        println!("{:?}", result);
+use rocket::serde::Deserialize;
+
+#[derive(Deserialize)]
+#[serde(crate = "rocket::serde")]
+struct GetVideoRequest<'r> {
+    url: &'r str,
+}
+
+#[post("/get", format = "application/json", data = "<video>")]
+async fn get_by_id(video: Json<GetVideoRequest<'_>>) -> Option<Json<ytdlp::Video>> {
+    match ytdlp::req_by_link(video.url.to_string()) {
+        Ok(v) => Some(Json(v)),
+        _ => None,
     }
 }
 
-#[get("/search/<searchstring>")]
-async fn run_search(searchstring: String) {
-    let result = ytdlp::search(searchstring);
-    println!("{:?}", result);
+#[post("/search", format = "application/json", data = "<searchstring>")]
+async fn run_search(searchstring: String) -> Option<Json<Vec<ytdlp::Video>>> {
+    match ytdlp::search(searchstring) {
+        Ok(v) => Some(Json(v)),
+        _ => None,
+    }
 }
 
 #[launch]

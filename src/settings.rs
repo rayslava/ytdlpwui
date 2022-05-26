@@ -11,6 +11,7 @@ pub struct Log {
 #[derive(Debug, Deserialize, Clone)]
 pub struct YtDLP {
     pub path: String,
+    pub search_num: u16,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -52,13 +53,16 @@ impl From<&str> for ENV {
 
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
-        for (key, value) in std::env::vars() {
-            println!("{key}: {value}");
-        }
-
-        let env = std::env::var("RUN_ENV").unwrap_or_else(|_| "Development".into());
+        let env = std::env::var("RUN_ENV").unwrap_or_else(|_| {
+            if cfg!(test) {
+                "Testing".into()
+            } else {
+                "Development".into()
+            }
+        });
         let builder = Config::builder()
             .set_default("env", env.clone())?
+            .set_default("ytdlp.search_num", 10)?
             .add_source(config::File::new(
                 CONFIG_FILE_PATH,
                 config::FileFormat::Toml,

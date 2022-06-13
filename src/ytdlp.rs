@@ -5,9 +5,9 @@ use serde::Deserialize;
 use std::process::Command as PCommand;
 
 #[cfg_attr(test, derive(Clone, PartialEq, Debug))]
-pub enum Command {
-    Link { id: String },
-    Search { string: String, number: u16 },
+pub enum Command<'l> {
+    Link { id: &'l str },
+    Search { string: &'l str, number: u16 },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -42,12 +42,12 @@ impl From<serde_json::Error> for YtDlpError {
 }
 
 #[cfg_attr(test, mry::mry)]
-fn app_call(cmd: Command) -> Result<String, YtDlpError> {
+fn app_call<'l>(cmd: Command<'l>) -> Result<String, YtDlpError> {
     let mut args = vec!["--dump-json".to_string(), "--no-progress".to_string()];
 
     match cmd {
         Command::Search { string, number } => args.push(format!("ytsearch{}:{}", number, string)),
-        Command::Link { id } => args.push(id),
+        Command::Link { id } => args.push(id.to_string()),
     };
 
     let result = PCommand::new(&CONFIG.ytdlp.path)
@@ -61,18 +61,19 @@ fn app_call(cmd: Command) -> Result<String, YtDlpError> {
     }
 }
 
-pub fn req_by_link(videoid: String) -> Result<Video, YtDlpError> {
+pub fn req_by_link(videoid: &str) -> Result<Video, YtDlpError> {
     let json = app_call(Command::Link { id: videoid })?;
     let json = json.trim_start_matches(|c| c != '{');
-    let v: Video = serde_json::from_str(json)?;
+    let v: Video = serde_json::from_str(&json)?;
     Ok(v)
 }
 
-pub fn search(searchstring: String) -> Result<Vec<Video>, YtDlpError> {
+pub fn search(searchstring: &str) -> Result<Vec<Video>, YtDlpError> {
     let json = app_call(Command::Search {
         string: searchstring,
         number: CONFIG.ytdlp.search_num,
-    })?;
+    })?
+    .clone();
     let result: Vec<Video> = json
         .split('\n')
         .filter_map(|line| serde_json::from_str(line).ok()?)

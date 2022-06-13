@@ -27,15 +27,15 @@ struct GetVideoRequest<'r> {
 }
 
 #[post("/get", format = "application/json", data = "<video>")]
-async fn get_by_id(video: Json<GetVideoRequest<'_>>) -> Option<Json<ytdlp::Video>> {
-    match ytdlp::req_by_link(video.url.to_string()) {
+async fn get_by_id<'l>(video: Json<GetVideoRequest<'l>>) -> Option<Json<ytdlp::Video>> {
+    match ytdlp::req_by_link(video.url) {
         Ok(v) => Some(Json(v)),
         _ => None,
     }
 }
 
 #[post("/search", format = "application/json", data = "<searchstring>")]
-async fn run_search(searchstring: String) -> Option<Json<Vec<ytdlp::Video>>> {
+async fn run_search<'l>(searchstring: &'l str) -> Option<Json<Vec<ytdlp::Video>>> {
     match ytdlp::search(searchstring) {
         Ok(v) => Some(Json(v)),
         _ => None,
